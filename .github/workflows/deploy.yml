@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [group:Default, home-server]
+    runs-on: [group:Default]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
