@@ -242,7 +242,7 @@ const submitVerifyOtp = () => {
                                     :value="otpDigits[index]"
                                     type="text"
                                     inputmode="numeric"
-                                    maxlength="1"
+                                    autocomplete="one-time-code"
                                     class="h-12 w-full rounded-xl border border-slate-300 bg-white text-center text-lg font-semibold outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
                                     @input="onOtpInput(index, $event)"
                                     @keydown="onOtpKeydown(index, $event)"
