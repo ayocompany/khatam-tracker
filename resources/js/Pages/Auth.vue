@@ -202,7 +202,8 @@ const submitVerifyOtp = () => {
                             <label class="text-xs font-semibold text-slate-700">Nomor WhatsApp</label>
                             <input
                                 v-model="sendForm.phone"
-                                type="text"
+                                type="tel"
+                                inputmode="numeric"
                                 placeholder="08xxxxxxxxxx"
                                 class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
                             />

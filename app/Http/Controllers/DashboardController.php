@@ -65,21 +65,7 @@ class DashboardController extends Controller
         $readFrom = $currentPage;
         $readTo = $targetPages > 0 ? $currentPage + $targetPages - 1 : $currentPage;
 
-        // Untuk daily_verses: compute suggested endpoint
-        $suggestedAyatSurahId = null;
-        $suggestedAyatVerseNumber = null;
-        if ($targetType === 'daily_verses') {
-            $startSurahId = $progress?->last_surah_id ?? 1;
-            $startVerse = $progress?->last_verse_number ?? 1;
-            $end = $this->resolveVerseOffset($startSurahId, $startVerse, $targetValue);
-            if ($end) {
-                $suggestedAyatSurahId = $end[0];
-                $suggestedAyatVerseNumber = $end[1];
-            }
-        }
-
-        // Resolve surah/ayat start & end dari page mapping
-        $layoutCode = $user->quran_layout_code ?? 'home_mushaf';
+        $layoutCode = $user->quran_layout_code ?? 'madinah_15';
         $startMapping = $this->pageMappingRepo->findFirstVerseByPageAndLayout($readFrom, $layoutCode);
         $endMapping = $this->pageMappingRepo->findLastVerseByPageAndLayout($readTo, $layoutCode);
 
@@ -96,6 +82,34 @@ class DashboardController extends Controller
         $endSurah = $endMapping?->verse
             ? $this->surahRepo->findById($endMapping->verse->surah_id)
             : null;
+
+        // Verse range info for target card (both modes)
+        $suggestedAyatSurahId = null;
+        $suggestedAyatVerseNumber = null;
+        $suggestedAyatEndSurahId = null;
+        $suggestedAyatEndVerseNumber = null;
+        $suggestedTotalVerses = 0;
+
+        if ($targetType === 'daily_verses') {
+            $startSurahId = $progress?->last_surah_id ?? 1;
+            $startVerse = $progress?->last_verse_number ?? 1;
+            $end = $this->resolveVerseOffset($startSurahId, $startVerse, $targetValue);
+            if ($end) {
+                $suggestedAyatSurahId = $end[0];
+                $suggestedAyatVerseNumber = $end[1];
+            }
+            $suggestedAyatEndSurahId = $suggestedAyatSurahId;
+            $suggestedAyatEndVerseNumber = $suggestedAyatVerseNumber;
+            $suggestedTotalVerses = $targetValue;
+        } elseif ($targetType === 'daily_pages' && $startMapping && $startMapping->verse) {
+            $suggestedAyatSurahId = $startMapping->verse->surah_id;
+            $suggestedAyatVerseNumber = $startMapping->verse->verse_number;
+            $suggestedAyatEndSurahId = $endMapping?->verse?->surah_id ?? $startMapping->verse->surah_id;
+            $suggestedAyatEndVerseNumber = $endMapping?->verse?->verse_number ?? $startMapping->verse->verse_number;
+            // Total verses across target pages
+            $suggestedTotalVerses = collect($this->pageMappingRepo->getPagesDetail($readFrom, $readTo, $layoutCode))
+                ->sum('verse_count');
+        }
 
         // Data untuk card terstruktur (surah, ayat, halaman)
         $todayReadSurah = null;
@@ -231,6 +245,9 @@ class DashboardController extends Controller
             'totalKhatam'            => $this->khatamHistoryRepo->countByUser($user->id),
             'suggestedAyatSurahId'   => $suggestedAyatSurahId,
             'suggestedAyatVerseNumber' => $suggestedAyatVerseNumber,
+            'suggestedAyatEndSurahId'   => $suggestedAyatEndSurahId,
+            'suggestedAyatEndVerseNumber' => $suggestedAyatEndVerseNumber,
+            'suggestedTotalVerses'  => $suggestedTotalVerses,
             'estimatedCompletionDate'  => $estimatedCompletionDate,
         ]);
     }

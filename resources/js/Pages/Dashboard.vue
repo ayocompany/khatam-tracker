@@ -53,6 +53,16 @@ const suggestedAyatSurahName = computed(() => {
     const s = surahs.value.find(s => s.id === Number(suggestedAyatSurahId.value));
     return s?.name_id ?? null;
 });
+
+const suggestedAyatEndSurahName = computed(() => {
+    if (!suggestedAyatEndSurahId.value) return null;
+    const s = surahs.value.find(s => s.id === Number(suggestedAyatEndSurahId.value));
+    return s?.name_id ?? null;
+});
+
+const suggestedAyatEndSurahId = computed(() => page.props.suggestedAyatEndSurahId ?? null);
+const suggestedAyatEndVerseNumber = computed(() => page.props.suggestedAyatEndVerseNumber ?? null);
+const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0);
 </script>
 
 <template>
@@ -182,7 +192,12 @@ const suggestedAyatSurahName = computed(() => {
                         <div v-if="!isAyatMode && suggestedReadFrom && suggestedReadTo && targetPages > 0" class="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
                             <p class="text-xs text-emerald-700">Bacaan hari ini</p>
                             <p class="mt-1 text-xl font-bold text-emerald-700">Halaman {{ suggestedReadFrom }} → {{ suggestedReadTo }}</p>
-                            <p class="mt-1 text-xs text-slate-600">{{ targetPages }} halaman • target harian</p>
+                            <p v-if="suggestedAyatSurahName" class="mt-1 text-sm font-semibold text-emerald-600">
+                                {{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}
+                                → {{ suggestedAyatEndSurahName }} : {{ suggestedAyatEndVerseNumber }}
+                            </p>
+                            <p v-if="suggestedTotalVerses > 0" class="mt-1 text-xs text-slate-600">{{ suggestedTotalVerses }} ayat • {{ targetPages }} halaman • target harian</p>
+                            <p v-else class="mt-1 text-xs text-slate-600">{{ targetPages }} halaman • target harian</p>
                         </div>
 
                         <!-- Guided range card: ayat mode -->
