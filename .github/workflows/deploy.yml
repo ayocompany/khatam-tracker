@@ -1,0 +1,35 @@
+name: Deploy
+
+env:
+  DEPLOY_DIR: project/khatam-tracker
+  RUNNER_LABEL: home-server
+  DEPLOY_SCRIPT: ./deploy.sh
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [home-server]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - run: |
+          set -euo pipefail
+          FULL="$HOME/${DEPLOY_DIR}"
+          [[ -f "${FULL}/${DEPLOY_SCRIPT}" ]] || { echo "::error::Script tidak ditemukan: ${FULL}/${DEPLOY_SCRIPT}"; exit 1; }
+          chmod +x "${FULL}/${DEPLOY_SCRIPT}"
+          ( cd "${FULL}" && "${DEPLOY_SCRIPT}" )
+        shell: bash
+
+      - if: always()
+        run: echo "Deploy ${{ github.ref_name }} @ ${{ github.sha }} → **${{ job.status }}**" >> "$GITHUB_STEP_SUMMARY"
