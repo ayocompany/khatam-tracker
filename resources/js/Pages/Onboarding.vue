@@ -1,10 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, usePage, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 const page = usePage();
 const surahs = computed(() => page.props.surahs ?? []);
+const layouts = computed(() => page.props.layouts ?? []);
 
 const form = ref({
     title: 'Khatam 30 Juz',
@@ -13,10 +14,16 @@ const form = ref({
     start_choice: 'from_beginning',
     start_surah_id: null,
     start_verse_number: null,
+    layout_code: '',
 });
 
 const errors = ref({});
 const submitting = ref(false);
+
+const selectedLayout = computed(() => {
+    if (!form.value.layout_code) return null;
+    return layouts.value.find(l => l.code === form.value.layout_code) ?? null;
+});
 
 const startSurahId = computed(() => Number(form.value.start_surah_id));
 
@@ -46,6 +53,10 @@ function resetStartSurah() {
     form.value.start_surah_id = null;
     form.value.start_verse_number = null;
 }
+
+function resetLayout() {
+    form.value.layout_code = '';
+}
 </script>
 
 <template>
@@ -73,39 +84,12 @@ function resetStartSurah() {
 
                 <!-- Form -->
                 <form @submit.prevent="submit" class="space-y-6">
-                    <!-- Nama Program -->
+                    <!-- 1. Pilih Target Type Per Ayat / Per Halaman -->
                     <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 class="text-base font-semibold text-slate-900">Nama Program</h3>
-                        <p class="mt-1 text-xs text-slate-500">Beri label agar mudah dikenali.</p>
-                        <input
-                            v-model="form.title"
-                            type="text"
-                            maxlength="150"
-                            class="mt-3 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-400 focus:ring-emerald-400"
-                            placeholder="Misal: Khatam 30 Juz"
-                        />
-                        <p v-if="errors.title" class="mt-1 text-xs text-red-500">{{ errors.title }}</p>
-                    </section>
-
-                    <!-- Target -->
-                    <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 class="text-base font-semibold text-slate-900">Target Khatam</h3>
-                        <p class="mt-1 text-xs text-slate-500">Bagaimana cara kamu mengatur target?</p>
+                        <h3 class="text-base font-semibold text-slate-900">1. Pilih Target</h3>
+                        <p class="mt-1 text-xs text-slate-500">Mau target per ayat atau per halaman?</p>
 
                         <div class="mt-4 space-y-3">
-                            <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-emerald-300 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-50 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    value="daily_pages"
-                                    v-model="form.target_type"
-                                    class="mt-0.5 text-emerald-500 focus:ring-emerald-400"
-                                />
-                                <div>
-                                    <p class="text-sm font-medium text-slate-800">Target halaman per hari</p>
-                                    <p class="text-xs text-slate-500">Tentukan target jumlah halaman yang ingin dibaca setiap hari.</p>
-                                </div>
-                            </label>
-
                             <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-emerald-300 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-50 cursor-pointer">
                                 <input
                                     type="radio"
@@ -115,9 +99,46 @@ function resetStartSurah() {
                                 />
                                 <div>
                                     <p class="text-sm font-medium text-slate-800">Target ayat per hari</p>
-                                    <p class="text-xs text-slate-500">Tentukan target jumlah ayat yang ingin dibaca setiap hari.</p>
+                                    <p class="text-xs text-slate-500">Tentukan target jumlah ayat yang ingin dibaca setiap hari (total Al-Qur'an 6.236 ayat).</p>
                                 </div>
                             </label>
+
+                            <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-4 hover:border-emerald-300 has-[:checked]:border-emerald-400 has-[:checked]:bg-emerald-50 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    value="daily_pages"
+                                    v-model="form.target_type"
+                                    @change="resetLayout"
+                                    class="mt-0.5 text-emerald-500 focus:ring-emerald-400"
+                                />
+                                <div>
+                                    <p class="text-sm font-medium text-slate-800">Target halaman per hari</p>
+                                    <p class="text-xs text-slate-500">Tentukan target jumlah halaman yang ingin dibaca setiap hari (berdasarkan jenis mushaf yang kamu pakai).</p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Pilih Mushaf (hanya untuk daily_pages) -->
+                        <div v-if="form.target_type === 'daily_pages'" class="mt-4">
+                            <label class="block text-sm font-medium text-slate-700">Jenis Mushaf</label>
+                            <p class="text-xs text-slate-500 mb-2">Pilih jenis Al-Qur'an yang kamu baca sehari-hari.</p>
+                            <select
+                                v-model="form.layout_code"
+                                class="block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-400 focus:ring-emerald-400 sm:max-w-xs"
+                            >
+                                <option value="" disabled>Pilih mushaf...</option>
+                                <option
+                                    v-for="layout in layouts"
+                                    :key="layout.code"
+                                    :value="layout.code"
+                                >
+                                    {{ layout.name }} ({{ layout.lines_per_page }} baris)
+                                </option>
+                            </select>
+                            <p v-if="selectedLayout" class="mt-1 text-xs text-slate-400">
+                                {{ selectedLayout.total_pages }} halaman
+                            </p>
+                            <p v-if="errors.layout_code" class="mt-1 text-xs text-red-500">{{ errors.layout_code }}</p>
                         </div>
 
                         <div class="mt-4">
@@ -129,7 +150,7 @@ function resetStartSurah() {
                                 }}
                             </label>
                             <input
-                                v-model="form.target_value"
+                                v-model.number="form.target_value"
                                 type="number"
                                 min="1"
                                 class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-emerald-400 focus:ring-emerald-400 sm:max-w-xs"
@@ -138,9 +159,27 @@ function resetStartSurah() {
                             <p v-if="errors.target_type" class="mt-1 text-xs text-red-500">{{ errors.target_type }}</p>
                             <p v-if="errors.target_value" class="mt-1 text-xs text-red-500">{{ errors.target_value }}</p>
                         </div>
+
+                        <!-- Estimasi lulusan untuk daily_verses -->
+                        <div v-if="form.target_type === 'daily_verses' && form.target_value >= 1" class="mt-4 rounded-xl bg-purple-50 p-4 ring-1 ring-purple-200">
+                            <p class="text-xs text-purple-700">📊 Estimasi khatam</p>
+                            <p class="mt-1 text-sm font-semibold text-purple-800">
+                                {{ Math.ceil(6236 / form.target_value) }} hari
+                                (~{{ Math.ceil(Math.ceil(6236 / form.target_value) / 30) }} bulan)
+                            </p>
+                            <p class="mt-0.5 text-xs text-slate-500">Total 6.236 ayat • {{ form.target_value }} ayat/hari</p>
+                        </div>
+                        <div v-else-if="form.target_type === 'daily_pages' && form.target_value >= 1 && selectedLayout" class="mt-4 rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-200">
+                            <p class="text-xs text-emerald-700">📊 Estimasi khatam</p>
+                            <p class="mt-1 text-sm font-semibold text-emerald-800">
+                                {{ Math.ceil(selectedLayout.total_pages / form.target_value) }} hari
+                                (~{{ Math.ceil(Math.ceil(selectedLayout.total_pages / form.target_value) / 30) }} bulan)
+                            </p>
+                            <p class="mt-0.5 text-xs text-slate-500">{{ selectedLayout.name }} • {{ selectedLayout.total_pages }} halaman • {{ form.target_value }} halaman/hari</p>
+                        </div>
                     </section>
 
-                    <!-- Posisi Awal -->
+                    <!-- 2. Posisi Awal -->
                     <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <h3 class="text-base font-semibold text-slate-900">Posisi Awal Bacaan</h3>
                         <p class="mt-1 text-xs text-slate-500">Kamu sudah membaca sampai mana?</p>

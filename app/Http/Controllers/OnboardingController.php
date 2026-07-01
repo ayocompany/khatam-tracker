@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\QuranLayout;
 use App\Repositories\Contracts\KhatamProgramRepositoryInterface;
 use App\Repositories\Contracts\KhatamProgressRepositoryInterface;
 use App\Repositories\Contracts\QuranSurahRepositoryInterface;
@@ -29,6 +30,7 @@ class OnboardingController extends Controller
         }
 
         $surahs = $this->surahRepo->getAllOrdered();
+        $layouts = QuranLayout::active()->get(['code', 'name', 'total_pages', 'lines_per_page']);
 
         \Inertia\Inertia::share('errors', new MessageBag);
 
@@ -38,6 +40,7 @@ class OnboardingController extends Controller
                 'name_id' => $s->name_id,
                 'total_verses' => $s->total_verses,
             ]),
+            'layouts' => $layouts,
         ]);
     }
 
@@ -65,6 +68,7 @@ class OnboardingController extends Controller
                 'integer',
                 'min:1',
             ],
+            'layout_code' => 'nullable|required_if:target_type,daily_pages|exists:quran_layouts,code',
         ]);
 
         // Default posisi awal (Al-Fatihah 1:1)
@@ -76,8 +80,15 @@ class OnboardingController extends Controller
             $verseNumber = (int) $validated['start_verse_number'];
         }
 
+        // Simpan layout mushaf ke user jika ada (wajib untuk daily_pages, opsional untuk daily_verses)
+        $layoutCode = $validated['layout_code'] ?? $user->quran_layout_code ?? 'madinah_15';
+        if (!empty($validated['layout_code']) && $validated['layout_code'] !== $user->quran_layout_code) {
+            $user->quran_layout_code = $validated['layout_code'];
+            $user->saveQuietly();
+        }
+
         // Find page number for the starting position
-        $pageNumber = $this->resolvePageNumber($user->quran_layout_code ?? 'madinah_15', $surahId, $verseNumber);
+        $pageNumber = $this->resolvePageNumber($layoutCode, $surahId, $verseNumber);
 
         // Buat program
         $program = $this->programRepo->create([
