@@ -120,8 +120,8 @@ const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0
                                 <p class="mt-0.5 text-sm font-bold text-purple-800">{{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}</p>
                             </div>
                             <div class="rounded-lg bg-purple-100 p-2">
-                                <p class="text-[10px] text-purple-600">Sampai</p>
-                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</p>
+                                <p class="text-[10px] text-purple-600">Sampai {{ dailyTargetValue }} ayat</p>
+                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ suggestedAyatSurahName }} : {{ dailyTargetValue }}</p>
                             </div>
                         </div>
                     </div>
@@ -214,7 +214,7 @@ const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0
                             <p class="text-xs text-purple-700">Bacaan hari ini</p>
                             <p class="mt-1 text-sm font-semibold text-purple-700">
                                 {{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}
-                                → {{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}
+                                → {{ suggestedAyatSurahName }} : {{ dailyTargetValue }}
                             </p>
                             <p class="mt-1 text-xs text-slate-600">Target {{ dailyTargetValue }} ayat</p>
                         </div>

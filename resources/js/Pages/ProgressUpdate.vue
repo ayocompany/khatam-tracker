@@ -98,7 +98,7 @@ const selectedSurahName = computed(() => {
                         Bacaan kamu hari ini dari
                         <strong class="text-purple-700">{{ surahs.find(s => s.id === currentProgress.last_surah_id)?.name_id ?? '—' }} : {{ currentProgress.last_verse_number }}</strong>
                         →
-                        <strong class="text-purple-700">{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</strong>
+                        <strong class="text-purple-700">{{ suggestedAyatSurahName }} : {{ targetValue }}</strong>
                         ({{ targetValue }} ayat).
                     </p>
                     <p class="mt-1 text-xs text-slate-500">
@@ -211,7 +211,7 @@ const selectedSurahName = computed(() => {
 
                         <p class="mt-3 text-xs text-slate-500" v-if="suggestedAyatSurahName">
                             ✨ Terisi otomatis: <strong>{{ surahs.find(s => s.id === currentProgress?.last_surah_id)?.name_id }} : {{ currentProgress?.last_verse_number }}</strong>
-                            + target {{ targetValue }} ayat → <strong>{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</strong>.
+                            + target {{ targetValue }} ayat → <strong>{{ suggestedAyatSurahName }} : {{ targetValue }}</strong>.
                             Sesuaikan jika bacaan berbeda.
                         </p>
                     </section>
