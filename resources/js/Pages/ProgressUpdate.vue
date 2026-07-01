@@ -14,6 +14,8 @@ const suggestedSurahId = computed(() => page.props.suggestedSurahId ?? null);
 const suggestedVerseNumber = computed(() => page.props.suggestedVerseNumber ?? null);
 const suggestedAyatSurahId = computed(() => page.props.suggestedAyatSurahId ?? null);
 const suggestedAyatVerseNumber = computed(() => page.props.suggestedAyatVerseNumber ?? null);
+const suggestedAyatEndSurahId = computed(() => page.props.suggestedAyatEndSurahId ?? null);
+const suggestedAyatEndVerseNumber = computed(() => page.props.suggestedAyatEndVerseNumber ?? null);
 const pagesDetail = computed(() => page.props.pagesDetail ?? []);
 const activeLayout = computed(() => page.props.activeLayout ?? null);
 const targetType = computed(() => page.props.targetType ?? 'daily_pages');
@@ -21,11 +23,34 @@ const targetValue = computed(() => page.props.targetValue ?? 0);
 
 const isAyatMode = computed(() => targetType.value === 'daily_verses');
 
+// Next unread position (last + 1)
+const nextPage = computed(() => {
+    const last = suggestedReadTo.value ?? currentProgress.value?.current_page_in_home_mushaf ?? 0;
+    return last > 0 ? last + 1 : 1;
+});
+
+function computeNextVerse() {
+    const endSurahId = suggestedAyatEndSurahId.value ?? suggestedAyatSurahId.value;
+    const endVerse = suggestedAyatEndVerseNumber.value ?? suggestedAyatVerseNumber.value;
+    if (!endSurahId || !endVerse) {
+        const lastSurahId = currentProgress.value?.last_surah_id ?? 1;
+        const lastVerse = currentProgress.value?.last_verse_number ?? 1;
+        const s = surahs.value.find(s => s.id === Number(lastSurahId));
+        if (lastVerse < (s?.total_verses ?? 0)) return { id: lastSurahId, verse: lastVerse + 1 };
+        return { id: Math.min(114, lastSurahId + 1), verse: 1 };
+    }
+    const s = surahs.value.find(s => s.id === Number(endSurahId));
+    if (endVerse < (s?.total_verses ?? 0)) return { id: endSurahId, verse: endVerse + 1 };
+    return { id: Math.min(114, endSurahId + 1), verse: 1 };
+}
+
+const nextStartAyat = computed(() => computeNextVerse());
+
 const form = ref(isAyatMode.value ? {
-    surah_id: suggestedAyatSurahId.value ?? currentProgress.value?.last_surah_id ?? 1,
-    verse_number: suggestedAyatVerseNumber.value ?? currentProgress.value?.last_verse_number ?? 1,
+    surah_id: nextStartAyat.value.id,
+    verse_number: nextStartAyat.value.verse,
 } : {
-    current_page_in_home_mushaf: suggestedReadTo.value ?? currentProgress.value?.current_page_in_home_mushaf ?? '',
+    current_page_in_home_mushaf: nextPage.value,
 });
 
 const errors = ref({});
@@ -92,17 +117,17 @@ const selectedSurahName = computed(() => {
                 </section>
 
                 <!-- Guide Banner: ayat mode -->
-                <section v-if="isAyatMode && currentProgress && targetValue > 0 && suggestedAyatSurahName" class="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-5">
+                <section v-if="isAyatMode && currentProgress && targetValue > 0 && suggestedAyatEndSurahId" class="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-5">
                     <p class="text-sm font-semibold text-purple-800">📖 Ngaji apa hari ini?</p>
                     <p class="mt-2 text-sm text-slate-700 leading-relaxed">
-                        Bacaan kamu hari ini dari
+                        Hari ini baca <strong>{{ targetValue }} ayat</strong> dari
                         <strong class="text-purple-700">{{ surahs.find(s => s.id === currentProgress.last_surah_id)?.name_id ?? '—' }} : {{ currentProgress.last_verse_number }}</strong>
                         →
-                        <strong class="text-purple-700">{{ suggestedAyatSurahName }} : {{ targetValue }}</strong>
-                        ({{ targetValue }} ayat).
+                        <strong class="text-purple-700">{{ suggestedAyatSurahName }} : {{ suggestedAyatEndVerseNumber }}</strong>.
                     </p>
-                    <p class="mt-1 text-xs text-slate-500">
-                        Kolom di bawah sudah terisi otomatis. Sesuaikan jika perlu, lalu simpan.
+                    <p class="mt-1 text-xs text-slate-600">
+                        ✅ Form di bawah sudah terisi dengan ayat selanjutnya: <strong>{{ surahs.find(s => s.id === nextStartAyat.id)?.name_id }} : {{ nextStartAyat.verse }}</strong>.
+                        Sesuaikan jika bacaan berbeda.
                     </p>
                 </section>
 
@@ -209,10 +234,9 @@ const selectedSurahName = computed(() => {
                             </div>
                         </div>
 
-                        <p class="mt-3 text-xs text-slate-500" v-if="suggestedAyatSurahName">
-                            ✨ Terisi otomatis: <strong>{{ surahs.find(s => s.id === currentProgress?.last_surah_id)?.name_id }} : {{ currentProgress?.last_verse_number }}</strong>
-                            + target {{ targetValue }} ayat → <strong>{{ suggestedAyatSurahName }} : {{ targetValue }}</strong>.
-                            Sesuaikan jika bacaan berbeda.
+                        <p class="mt-3 text-xs text-slate-500" v-if="suggestedAyatEndSurahId">
+                            ✨ Terisi otomatis: <strong>{{ surahs.find(s => s.id === nextStartAyat.id)?.name_id }} : {{ nextStartAyat.verse }}</strong>.
+                            Sesuaikan jika selesai di ayat berbeda.
                         </p>
                     </section>
 

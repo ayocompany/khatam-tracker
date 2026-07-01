@@ -58,6 +58,8 @@ class ProgressUpdateController extends Controller
         // For daily_verses: compute suggested endpoint = current position + targetValue ayat
         $suggestedAyatSurahId = null;
         $suggestedAyatVerseNumber = null;
+        $suggestedAyatEndSurahId = null;
+        $suggestedAyatEndVerseNumber = null;
         if ($targetType === 'daily_verses') {
             $startSurahId = $progress?->last_surah_id ?? 1;
             $startVerse = $progress?->last_verse_number ?? 1;
@@ -66,6 +68,8 @@ class ProgressUpdateController extends Controller
                 $suggestedAyatSurahId = $end[0];
                 $suggestedAyatVerseNumber = $end[1];
             }
+            $suggestedAyatEndSurahId = $suggestedAyatSurahId;
+            $suggestedAyatEndVerseNumber = $suggestedAyatVerseNumber;
         }
 
         // Pages detail only for page-based
@@ -91,8 +95,10 @@ class ProgressUpdateController extends Controller
             'targetPages'           => $totalPages,
             'suggestedSurahId'      => $suggestedSurahId,
             'suggestedVerseNumber'  => $suggestedVerseNumber,
-            'suggestedAyatSurahId'  => $suggestedAyatSurahId,
+            'suggestedAyatSurahId'   => $suggestedAyatSurahId,
             'suggestedAyatVerseNumber' => $suggestedAyatVerseNumber,
+            'suggestedAyatEndSurahId'   => $suggestedAyatEndSurahId,
+            'suggestedAyatEndVerseNumber' => $suggestedAyatEndVerseNumber,
             'pagesDetail'           => $pagesDetail,
             'activeLayout'          => $layout ? [
                 'code' => $layout->code,

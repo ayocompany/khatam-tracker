@@ -114,16 +114,12 @@ const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0
                     <!-- ✅ Jawaban: Ngaji apa hari ini? — Mode ayat -->
                     <div v-if="isAyatMode && todayReadFromSurahName && suggestedAyatSurahName" class="mt-4 rounded-xl bg-purple-50/70 p-4 ring-1 ring-purple-200">
                         <p class="text-xs text-purple-600 font-medium">🗓️ Jawaban: Ngaji apa hari ini?</p>
-                        <div class="mt-3 grid grid-cols-2 gap-3 text-center">
-                            <div class="rounded-lg bg-purple-100 p-2">
-                                <p class="text-[10px] text-purple-600">Dari</p>
-                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}</p>
-                            </div>
-                            <div class="rounded-lg bg-purple-100 p-2">
-                                <p class="text-[10px] text-purple-600">Sampai {{ dailyTargetValue }} ayat</p>
-                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ suggestedAyatSurahName }} : {{ dailyTargetValue }}</p>
-                            </div>
-                        </div>
+                        <p class="mt-2 text-center text-sm text-slate-700">
+                            Baca <strong>{{ dailyTargetValue }} ayat</strong> dari
+                            <strong class="text-purple-700">{{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}</strong>
+                            →
+                            <strong class="text-purple-700">{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</strong>
+                        </p>
                     </div>
 
                     <!-- 📄 Breakdown per halaman di Dashboard (page mode only) -->
@@ -214,7 +210,7 @@ const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0
                             <p class="text-xs text-purple-700">Bacaan hari ini</p>
                             <p class="mt-1 text-sm font-semibold text-purple-700">
                                 {{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}
-                                → {{ suggestedAyatSurahName }} : {{ dailyTargetValue }}
+                                → {{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}
                             </p>
                             <p class="mt-1 text-xs text-slate-600">Target {{ dailyTargetValue }} ayat</p>
                         </div>
