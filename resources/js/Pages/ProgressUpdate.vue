@@ -92,15 +92,17 @@ const selectedSurahName = computed(() => {
                 </section>
 
                 <!-- Guide Banner: ayat mode -->
-                <section v-if="isAyatMode && targetValue > 0" class="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-5">
+                <section v-if="isAyatMode && currentProgress && targetValue > 0 && suggestedAyatSurahName" class="rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 p-5">
                     <p class="text-sm font-semibold text-purple-800">📖 Ngaji apa hari ini?</p>
-                    <p class="mt-2 text-sm text-slate-700 leading-relaxed" v-if="currentProgress">
-                        Kamu dapat melanjutkan dari
-                        <strong class="text-purple-700">{{ surahs.find(s => s.id === currentProgress.last_surah_id)?.name_id ?? '—' }} ayat {{ currentProgress.last_verse_number }}</strong>
-                        dengan target <strong class="text-purple-700">{{ targetValue }} ayat</strong>.
+                    <p class="mt-2 text-sm text-slate-700 leading-relaxed">
+                        Bacaan kamu hari ini dari
+                        <strong class="text-purple-700">{{ surahs.find(s => s.id === currentProgress.last_surah_id)?.name_id ?? '—' }} : {{ currentProgress.last_verse_number }}</strong>
+                        →
+                        <strong class="text-purple-700">{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</strong>
+                        ({{ targetValue }} ayat).
                     </p>
-                    <p class="mt-1 text-xs text-purple-700 font-medium" v-if="suggestedAyatSurahName">
-                        ✨ Sampai <strong>{{ suggestedAyatSurahName }} ayat {{ suggestedAyatVerseNumber }}</strong>
+                    <p class="mt-1 text-xs text-slate-500">
+                        Kolom di bawah sudah terisi otomatis. Sesuaikan jika perlu, lalu simpan.
                     </p>
                 </section>
 

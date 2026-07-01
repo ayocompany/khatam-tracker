@@ -60,6 +60,15 @@ const suggestedAyatEndSurahName = computed(() => {
     return s?.name_id ?? null;
 });
 
+const todayReadFromSurahName = computed(() => {
+    const id = progress.value?.last_surah_id;
+    if (!id) return null;
+    const s = surahs.value.find(s => s.id === Number(id));
+    return s?.name_id ?? null;
+});
+
+const todayReadFromVerseNumber = computed(() => progress.value?.last_verse_number ?? null);
+
 const suggestedAyatEndSurahId = computed(() => page.props.suggestedAyatEndSurahId ?? null);
 const suggestedAyatEndVerseNumber = computed(() => page.props.suggestedAyatEndVerseNumber ?? null);
 const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0);
@@ -103,16 +112,16 @@ const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0
                     </div>
 
                     <!-- ✅ Jawaban: Ngaji apa hari ini? — Mode ayat -->
-                    <div v-if="isAyatMode && suggestedAyatSurahName" class="mt-4 rounded-xl bg-purple-50/70 p-4 ring-1 ring-purple-200">
+                    <div v-if="isAyatMode && todayReadFromSurahName && suggestedAyatSurahName" class="mt-4 rounded-xl bg-purple-50/70 p-4 ring-1 ring-purple-200">
                         <p class="text-xs text-purple-600 font-medium">🗓️ Jawaban: Ngaji apa hari ini?</p>
                         <div class="mt-3 grid grid-cols-2 gap-3 text-center">
                             <div class="rounded-lg bg-purple-100 p-2">
-                                <p class="text-[10px] text-purple-600">Surat</p>
-                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ suggestedAyatSurahName }}</p>
+                                <p class="text-[10px] text-purple-600">Dari</p>
+                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}</p>
                             </div>
                             <div class="rounded-lg bg-purple-100 p-2">
-                                <p class="text-[10px] text-purple-600">Ayat</p>
-                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ suggestedAyatVerseNumber }}</p>
+                                <p class="text-[10px] text-purple-600">Sampai</p>
+                                <p class="mt-0.5 text-sm font-bold text-purple-800">{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</p>
                             </div>
                         </div>
                     </div>
@@ -201,9 +210,12 @@ const suggestedTotalVerses = computed(() => page.props.suggestedTotalVerses ?? 0
                         </div>
 
                         <!-- Guided range card: ayat mode -->
-                        <div v-if="isAyatMode && suggestedAyatSurahName" class="rounded-xl bg-purple-50 p-4 ring-1 ring-purple-200">
+                        <div v-if="isAyatMode && todayReadFromSurahName && suggestedAyatSurahName" class="rounded-xl bg-purple-50 p-4 ring-1 ring-purple-200">
                             <p class="text-xs text-purple-700">Bacaan hari ini</p>
-                            <p class="mt-1 text-lg font-bold text-purple-700">{{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}</p>
+                            <p class="mt-1 text-sm font-semibold text-purple-700">
+                                {{ todayReadFromSurahName }} : {{ todayReadFromVerseNumber }}
+                                → {{ suggestedAyatSurahName }} : {{ suggestedAyatVerseNumber }}
+                            </p>
                             <p class="mt-1 text-xs text-slate-600">Target {{ dailyTargetValue }} ayat</p>
                         </div>
 
